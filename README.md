@@ -47,12 +47,12 @@ validador-ip-url-lfaf/
 
 Para atender aos requisitos da disciplina, todos os integrantes participam tanto da fundamentação teórica/documental quanto da implementação do código:
 
-| Integrante | Responsabilidade Teórica / Documental | Responsabilidade na Programação (`src/`) |
+| Integrante | Módulo / Arquivo Responsável | Descrição das Atividades |
 | :--- | :--- | :--- |
-| **Pedro** | Definição formal da quíntupla $M = (Q, \Sigma, \delta, q_0, F)$ e lógica inicial do diagrama de transições. | **`input_handler.py`**: Validação do alfabeto permitido ($\Sigma$) e inicialização do estado $q_0$. |
-| **Gus** | Verificação das regras de transição ($\delta$) e validação de estados de aceitação e erro. | **`validator.py`**: Implementação do núcleo do AFD (tabela/regras de transição de estados). |
-| **Guilherme** | Redação e compilação do Relatório Técnico em $\LaTeX$ (`amsmath`, `tikz` e `listings`). | **`tests.py`**: Criação da suíte de testes automatizados para validar a aceitação/rejeição de cadeias. |
-| **Cauã** | Criação dos slides da apresentação em $\LaTeX$ (`beamer`) e roteiro da defesa oral. | **`main.py`**: Desenvolvimento da interface interativa no terminal (CLI) e integração dos módulos. |
+| **Pedro** | `src/validator_ip.py` & Modelagem Matemática | • Definição formal da quíntupla matemática do autômato ($M$) e do diagrama de transições do IPv4[cite: 40, 191].<br>• Implementação do núcleo de transição de estados para a validação de endereços IPv4. |
+| **Gus** | `src/input_handler.py` | • Desenvolvimento da função de leitura e tratamento de entradas.<br>• Validação prévia do alfabeto permitido ($\Sigma$)[cite: 4] antes de enviar a cadeia para os autômatos. |
+| **Guilherme** | `src/validator_url.py` & `docs/relatorio/` | • Implementação do autômato voltado para a validação sintática de URLs.<br>• Produção do relatório técnico completo em LaTeX (`article` / SBC)[cite: 192]. |
+| **Cauã** | `src/main.py`, `src/tests.py` & `docs/apresentacao/` | • Desenvolvimento do menu interativo no terminal (CLI)[cite: 191].<br>• Criação da bateria de testes automatizados (`tests.py`) e dos slides em Beamer[cite: 192]. |
 
 ---
 
