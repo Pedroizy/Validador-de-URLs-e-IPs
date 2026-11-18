@@ -20,24 +20,23 @@ Este trabalho consiste na especificação matemática formal e na implementaçã
 ## 📁 Estrutura do Repositório
 
 ```text
-validador-ip-url-lfaf/
+projeto-validador-lfaf/
 │
-├── src/                        # Código-fonte do simulador em Python
-│   ├── main.py                 # Interface de linha de comando (CLI) e menu interativo
-│   ├── validator.py            # Núcleo de transição de estados do AFD
-│   ├── input_handler.py        # Validação do alfabeto (Σ) e leitura inicial
-│   └── tests.py                # Bateria de testes automatizados (válidos e inválidos)
+├── README.md                 # Documentação principal do repositório (com instruções, equipe e rotas)
 │
-├── docs/                       # Documentação acadêmica em LaTeX
-│   ├── relatorio/              # Relatório técnico (article / SBC)
-│   │   ├── main.tex            # Arquivo principal com pacotes amsmath, tikz e listings
-│   │   └── diagramas.tex       # Código vetorial TikZ do autômato
-│   │
-│   └── apresentacao/           # Slides da defesa do projeto (Beamer)
-│       └── slides.tex          # Apresentação de 10-15 minutos
+├── src/                      # Pasta contendo todo o código-fonte em Python
+│   ├── __init__.py           # Torna a pasta src um pacote Python (opcional, mas boa prática)
+│   ├── main.py               # Arquivo principal: O menu de escolha (IP ou URL)
+│   ├── validador_ip.py       # Módulo do Autômato de IPv4
+│   └── validador_url.py      # Módulo do Autômato de URL
 │
-├── .gitignore                  # Arquivos temporários ignorados (Python e compilações LaTeX)
-└── README.md                   # Documentação geral do repositório
+├── docs/                     # Pasta opcional para guardar os arquivos do relatório
+│   ├── relatorio.tex         # Relatório técnico em LaTeX (classe article)
+│   ├── apresentacao.tex      # Slides de defesa em LaTeX (classe beamer)
+│   └── imagens/              # Diagramas e grafos exportados (TikZ / PNG)
+│
+└── tests/                    # Pasta de testes automatizados (opcional, para garantir os asserts)
+    └── test_validadores.py   # Testes unitários validando casos certos e errados
 ```
 
 ---
