@@ -1,6 +1,5 @@
 
-from input_handler import # a definir #
-from validator_ip import validar_alfabeto_inicial
+from validator_ip import processar_ip
 from validator_url import validar_url
 
 
@@ -16,17 +15,10 @@ def main():
         if opcao == "1":
             entrada = input("Digite o endereço IP: ")
 
-            # Primeiro verifica os caracteres permitidos
-            if Teste1(entrada):
-
-                # Se estiver tudo correto, envia para o autômato
-                if validar_alfabeto_inicial(entrada):
-                    print("ACEITA")
-                else:
-                    print("REJEITA")
-
+            if processar_ip(entrada):
+                print("ACEITA")
             else:
-                print("ERRO: Foram inseridos caracteres não permitidos em um endereço IP.")
+                print("REJEITA")
 
         elif opcao == "2":
             entrada = input("Digite a URL: ")
