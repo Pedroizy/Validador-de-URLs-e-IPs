@@ -9,6 +9,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage[a4paper, margin=2.5cm]{geometry}
+\setlength{\emergencystretch}{3em}
 
 % Configuração dos blocos de código (listings)
 \renewcommand{\lstlistingname}{Código}
@@ -49,7 +50,7 @@ minimalidade e a implementação de apoio em Python.
 
 \section{Validador de IP}
 \subsection{Definição Formal}
-% parte matemática do Pedro entra aqui
+% parte matemática entra aqui
 \subsection{Diagrama de Transições}
 \subsection{Implementação}
 
@@ -58,31 +59,48 @@ minimalidade e a implementação de apoio em Python.
 
 \subsection{Linguagem reconhecida}
 Seja $L = \{\texttt{a},\dots,\texttt{z},\texttt{A},\dots,\texttt{Z}\}$ o conjunto
-das letras, $D = \{\texttt{0},\dots,\texttt{9}\}$ o conjunto dos dígitos e
-$A = L \cup D$ o conjunto dos alfanuméricos. O autômato reconhece a linguagem
-\[
-  \mathcal{L}(M_{URL}) = \bigl\{\, p \cdot d \cdot \texttt{.} \cdot e \;\bigm|\;
-  p \in \{\varepsilon,\ \texttt{http://},\ \texttt{https://}\},\
-  d \in A^{+},\
-  e \in \{\texttt{com},\ \texttt{br}\} \,\bigr\},
-\]
-ou seja, o protocolo é opcional, o domínio possui um ou mais caracteres
-alfanuméricos, seguidos de um ponto e de uma extensão \texttt{com} ou
-\texttt{br}. O protocolo e a extensão são reconhecidos apenas em letras
-minúsculas. Exemplos válidos: \texttt{ufal.br}, \texttt{http://google.com},
-\texttt{https://site1.br}.
+das letras, $D = \{\texttt{0},\dots,\texttt{9}\}$ o conjunto dos dígitos,
+$A = L \cup D$ o conjunto dos alfanuméricos e $W = A \cup \{\texttt{-}\}$.
+O autômato reconhece a linguagem
+\begin{align*}
+  \mathcal{L}(M_{URL}) = \bigl\{\, & p \cdot r_1 \cdot \texttt{.} \cdot r_2 \cdot \texttt{.}
+  \cdots r_n \cdot \texttt{.} \cdot e \;\bigm| \\
+  & p \in \{\varepsilon,\ \texttt{http://},\ \texttt{https://}\},\
+  n \geq 1,\ r_i \in A\,W^{*},\ e \in L\,L^{+} \,\bigr\}.
+\end{align*}
+
+Ou seja, o protocolo é opcional; a URL possui um ou mais \emph{rótulos}
+$r_i$ (como \texttt{www} ou \texttt{google}), cada um começando por letra ou
+dígito e seguido de letras, dígitos ou hífens; os rótulos são separados por
+pontos, e a URL termina em uma \emph{extensão} $e$ formada apenas por letras,
+com pelo menos duas (\texttt{com}, \texttt{br}, \texttt{org}, \texttt{edu}, \dots).
+Isso permite subdomínios e extensões de vários níveis. O protocolo é
+reconhecido apenas em letras minúsculas.
+
+\medskip
+\begin{itemize}
+  \item \textbf{Aceitas:} \texttt{ufal.br}, \texttt{www.google.com},\\
+        \texttt{http://meu-site.com.br}, \texttt{https://www.ufal.edu.br}.
+  \item \textbf{Rejeitadas:} \texttt{google} (sem ponto), \texttt{a.b}
+        (extensão com uma letra),\\
+        \texttt{-a.com} (rótulo iniciado por hífen), \texttt{a..com} (rótulo vazio), \texttt{http://} (sem domínio).
+\end{itemize}
 
 \subsection{Definição Formal}
 O reconhecedor é o AFD $M_{URL} = (Q, \Sigma, \delta, q_0, F)$, em que
 \begin{align*}
-  Q      &= \{q_0, q_1, \dots, q_{14}, q_e\}, \\
-  \Sigma &= A \cup \{\texttt{.},\ \texttt{:},\ \texttt{/}\}, \\
+  Q      &= \{q_0, q_1, \dots, q_{12}, q_e\}, \\
+  \Sigma &= A \cup \{\texttt{.},\ \texttt{:},\ \texttt{/},\ \texttt{-}\}, \\
   q_0    &= q_0, \\
-  F      &= \{q_{14}\},
+  F      &= \{q_{12}\},
 \end{align*}
 e $q_e$ é o estado de erro (armadilha), com $\delta(q_e, a) = q_e$ para todo
-$a \in \Sigma$. A função de transição total $\delta : Q \times \Sigma \to Q$ é
-dada por:
+$a \in \Sigma$. Os estados têm os seguintes papéis: $q_0$ é o início;
+$q_1,\dots,q_5$ acompanham o prefixo \texttt{http}/\texttt{https}; $q_6$, $q_7$
+e $q_8$ reconhecem \texttt{://}; $q_9$ indica um rótulo em andamento; $q_{10}$
+indica que acabou de ser lido um ponto; $q_{11}$ e $q_{12}$ indicam uma extensão
+com uma e com duas ou mais letras, respectivamente. A função de transição total
+$\delta : Q \times \Sigma \to Q$ é dada por:
 \begin{align*}
   & \delta(q_0, \texttt{h}) = q_1, \quad
     \delta(q_1, \texttt{t}) = q_2, \quad
@@ -92,47 +110,46 @@ dada por:
   & \delta(q_4, \texttt{:}) = \delta(q_5, \texttt{:}) = q_6, \quad
     \delta(q_6, \texttt{/}) = q_7, \quad
     \delta(q_7, \texttt{/}) = q_8, \\
-  & \delta(q_{10}, \texttt{c}) = q_{11}, \quad
-    \delta(q_{11}, \texttt{o}) = q_{12}, \quad
-    \delta(q_{12}, \texttt{m}) = q_{14}, \\
-  & \delta(q_{10}, \texttt{b}) = q_{13}, \quad
-    \delta(q_{13}, \texttt{r}) = q_{14}, \\
   & \delta(q, a) = q_9 \quad \text{para } a \in A,\
     q \in \{q_0, q_1, q_2, q_3, q_4, q_5, q_8, q_9\}
     \text{ (se ainda não definida acima)}, \\
+  & \delta(q, \texttt{-}) = q_9 \quad \text{para }
+    q \in \{q_1, \dots, q_5, q_9, q_{11}, q_{12}\}, \\
   & \delta(q, \texttt{.}) = q_{10} \quad \text{para }
-    q \in \{q_1, q_2, q_3, q_4, q_5, q_9\}, \\
+    q \in \{q_1, \dots, q_5, q_9, q_{11}, q_{12}\}, \\
+  & \delta(q_{10}, a) = q_{11}, \quad
+    \delta(q_{11}, a) = q_{12}, \quad
+    \delta(q_{12}, a) = q_{12} \quad \text{para } a \in L, \\
+  & \delta(q, a) = q_9 \quad \text{para } a \in D,\
+    q \in \{q_{10}, q_{11}, q_{12}\}, \\
   & \delta(q, a) = q_e \quad \text{em todos os demais casos.}
 \end{align*}
 
 A Tabela~\ref{tab:delta-url} apresenta $\delta$ de forma completa. Nela,
-$A'$ representa qualquer alfanumérico que não aparece como coluna própria
-(dígitos, letras maiúsculas e as letras minúsculas restantes), e
-``--'' indica a transição para $q_e$.
+$L'$ representa qualquer letra diferente de \texttt{h}, \texttt{t}, \texttt{p}
+e \texttt{s} (maiúsculas e minúsculas), e ``--'' indica a transição para $q_e$.
 
 \begin{table}[htbp]
   \centering
   \small
   \setlength{\tabcolsep}{3pt}
   \resizebox{\textwidth}{!}{%
-\begin{tabular}{l|ccccccccccccc}
- & \texttt{h} & \texttt{t} & \texttt{p} & \texttt{s} & \texttt{c} & \texttt{o} & \texttt{m} & \texttt{b} & \texttt{r} & $A'$ & \texttt{.} & \texttt{:} & \texttt{/} \\
+\begin{tabular}{l|cccccccccc}
+ & \texttt{h} & \texttt{t} & \texttt{p} & \texttt{s} & $L'$ & $D$ & \texttt{-} & \texttt{.} & \texttt{:} & \texttt{/} \\
 \hline
-$\rightarrow q_{0}$ & $q_{1}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & -- & -- & -- \\
-$q_{1}$ & $q_{9}$ & $q_{2}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
-$q_{2}$ & $q_{9}$ & $q_{3}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
-$q_{3}$ & $q_{9}$ & $q_{9}$ & $q_{4}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
-$q_{4}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{5}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & $q_{6}$ & -- \\
-$q_{5}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & $q_{6}$ & -- \\
-$q_{6}$ & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & $q_{7}$ \\
-$q_{7}$ & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & $q_{8}$ \\
-$q_{8}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & -- & -- & -- \\
-$q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
-$q_{10}$ & -- & -- & -- & -- & $q_{11}$ & -- & -- & $q_{13}$ & -- & -- & -- & -- & -- \\
-$q_{11}$ & -- & -- & -- & -- & -- & $q_{12}$ & -- & -- & -- & -- & -- & -- & -- \\
-$q_{12}$ & -- & -- & -- & -- & -- & -- & $q_{14}$ & -- & -- & -- & -- & -- & -- \\
-$q_{13}$ & -- & -- & -- & -- & -- & -- & -- & -- & $q_{14}$ & -- & -- & -- & -- \\
-$* q_{14}$ & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+$\rightarrow q_{0}$ & $q_{1}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & -- & -- & -- & -- \\
+$q_{1}$ & $q_{9}$ & $q_{2}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
+$q_{2}$ & $q_{9}$ & $q_{3}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
+$q_{3}$ & $q_{9}$ & $q_{9}$ & $q_{4}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
+$q_{4}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{5}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & $q_{6}$ & -- \\
+$q_{5}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & $q_{6}$ & -- \\
+$q_{6}$ & -- & -- & -- & -- & -- & -- & -- & -- & -- & $q_{7}$ \\
+$q_{7}$ & -- & -- & -- & -- & -- & -- & -- & -- & -- & $q_{8}$ \\
+$q_{8}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & -- & -- & -- & -- \\
+$q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
+$q_{10}$ & $q_{11}$ & $q_{11}$ & $q_{11}$ & $q_{11}$ & $q_{11}$ & $q_{9}$ & -- & -- & -- & -- \\
+$q_{11}$ & $q_{12}$ & $q_{12}$ & $q_{12}$ & $q_{12}$ & $q_{12}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
+$* q_{12}$ & $q_{12}$ & $q_{12}$ & $q_{12}$ & $q_{12}$ & $q_{12}$ & $q_{9}$ & $q_{9}$ & $q_{10}$ & -- & -- \\
 \end{tabular}}
   \caption{Função de transição $\delta$ do autômato $M_{URL}$.}
   \label{tab:delta-url}
@@ -140,18 +157,21 @@ $* q_{14}$ & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
 
 \subsection{Diagrama de Transições}
 A Figura~\ref{fig:afd-url} mostra o grafo de estados de $M_{URL}$. Os estados
-$q_1,\dots,q_5$ compartilham o mesmo comportamento para alfanuméricos e para o
-ponto, e por isso são agrupados no retângulo tracejado. Isso é necessário porque
-um domínio pode começar com as mesmas letras do protocolo (por exemplo,
-\texttt{http.com}), e um AFD não possui transições $\varepsilon$ para
-``decidir'' se \texttt{http} é protocolo ou parte do domínio.
+$q_1,\dots,q_5$ compartilham o mesmo comportamento para alfanuméricos, hífen e
+ponto, e por isso são agrupados no retângulo tracejado superior; o mesmo vale
+para $q_{11}$ e $q_{12}$, que só diferem no tratamento de letras. O agrupamento
+do prefixo é necessário porque um rótulo pode começar com as mesmas letras do
+protocolo (por exemplo, \texttt{http.com}), e um AFD não possui transições
+$\varepsilon$ para ``decidir'' se \texttt{http} é protocolo ou parte do domínio.
+O estado $q_{12}$ só é alcançado por duas ou mais letras logo após um ponto, o
+que garante que a extensão final seja composta apenas de letras.
 
 \input{diagramas}
 
 \subsection{Minimização}
 Aplicou-se o algoritmo de refinamento de partições (Moore) ao AFD completo,
-com 16 estados. A partição inicial separa os estados finais dos não finais,
-$P_0 = \{\{q_{14}\},\ Q \setminus \{q_{14}\}\}$, e a cada etapa dois estados
+com 14 estados. A partição inicial separa os estados finais dos não finais,
+$P_0 = \{\{q_{12}\},\ Q \setminus \{q_{12}\}\}$, e a cada etapa dois estados
 permanecem juntos apenas se, para todo símbolo, suas transições levam a
 classes iguais. A Tabela~\ref{tab:moore} resume as etapas.
 
@@ -162,15 +182,15 @@ classes iguais. A Tabela~\ref{tab:moore} resume as etapas.
     \hline
     Etapa & Estados separados & Símbolo distintivo \\
     \hline
-    $P_1$  & $q_{12}$ e $q_{13}$ dos demais     & \texttt{m} e \texttt{r} (levam a $F$) \\
-    $P_2$  & $q_{10}$ e $q_{11}$                & \texttt{b} e \texttt{o} (levam a $q_{13}$, $q_{12}$) \\
+    $P_1$  & $q_{11}$ dos demais                & $L$ (leva a $q_{12} \in F$) \\
+    $P_2$  & $q_{10}$ dos demais                & $L$ (leva a $q_{11}$) \\
     $P_3$  & $\{q_1,\dots,q_5,q_9\}$ de $\{q_0,q_6,q_7,q_8,q_e\}$ & \texttt{.} (leva a $q_{10}$) \\
-    $P_4$  & $\{q_0,q_8\}$ de $\{q_6,q_7,q_e\}$ & $A'$ (leva a $q_9$) \\
+    $P_4$  & $\{q_0,q_8\}$ de $\{q_6,q_7,q_e\}$ & $L'$ (leva a $q_9$) \\
     $P_5$  & $q_7$ de $\{q_6,q_e\}$             & \texttt{/} (leva a $q_8$) \\
     $P_6$  & $q_6$ de $q_e$                     & \texttt{/} (leva a $q_7$) \\
     $P_7$  & $\{q_4,q_5\}$ de $\{q_1,q_2,q_3,q_9\}$ & \texttt{:} (leva a $q_6$) \\
     $P_8$  & $q_3$; e $q_4$ de $q_5$            & \texttt{p}; e \texttt{s} \\
-    $P_9$  & $q_2$                              & \texttt{t} (leva a $q_3$) \\
+    $P_9$  & $q_2$ de $\{q_1,q_9\}$             & \texttt{t} (leva a $q_3$) \\
     $P_{10}$ & $q_1$ de $q_9$                   & \texttt{t} (leva a $q_2$) \\
     $P_{11}$ & $q_0$ de $q_8$                   & \texttt{h} (leva a $q_1$) \\
     \hline
@@ -181,7 +201,7 @@ classes iguais. A Tabela~\ref{tab:moore} resume as etapas.
 
 Em $P_{11}$ todas as classes são unitárias, e $P_{12} = P_{11}$ encerra o
 algoritmo. Logo, nenhum par de estados é equivalente: o AFD da
-Figura~\ref{fig:afd-url} já é \emph{mínimo}, com 15 estados úteis mais o estado
+Figura~\ref{fig:afd-url} já é \emph{mínimo}, com 13 estados úteis mais o estado
 de erro, e todos os estados são alcançáveis a partir de $q_0$.
 
 \subsection{Implementação}
@@ -190,11 +210,11 @@ definição acima. O Código~\ref{lst:transicoes} mostra a tabela de transiçõe
 específicas e as regras gerais, e o Código~\ref{lst:validar} mostra a função
 de transição $\delta$ e o laço que percorre a cadeia.
 
-\lstinputlisting[firstline=20, lastline=44,
+\lstinputlisting[firstline=25, lastline=50,
   caption={Transições do AFD em \texttt{validator\_url.py}.},
   label={lst:transicoes}]{../../src/validator_url.py}
 
-\lstinputlisting[firstline=47, lastline=73,
+\lstinputlisting[firstline=53, lastline=86,
   caption={Função de transição $\delta$ e simulação do autômato.},
   label={lst:validar}]{../../src/validator_url.py}
 

@@ -23,18 +23,20 @@
     \node[draw, dashed, rounded corners, fit=(q1)(q5), inner sep=8pt,
           label={[font=\footnotesize]above:estados de prefixo $q_1,\dots,q_5$}] (pref) {};
 
-    % --- Linha 2: separador "://" e dominio ---
+    % --- Linha 2: separador "://" e rotulo em andamento ---
     \node[state] (q9) at (2.4,-3.4) {$q_9$};
     \node[state] (q8) at (4.8,-3.4) {$q_8$};
     \node[state] (q7) at (7.2,-3.4) {$q_7$};
     \node[state] (q6) at (9.6,-3.4) {$q_6$};
 
-    % --- Linha 3: extensao ".com" / ".br" ---
+    % --- Linha 3: apos o ponto (extensao) ---
     \node[state] (q10) at (2.4,-6.8) {$q_{10}$};
     \node[state] (q11) at (4.8,-6.8) {$q_{11}$};
-    \node[state] (q12) at (7.2,-6.8) {$q_{12}$};
-    \node[state, accepting] (q14) at (9.6,-6.8) {$q_{14}$};
-    \node[state] (q13) at (6.0,-9.2) {$q_{13}$};
+    \node[state, accepting] (q12) at (7.2,-6.8) {$q_{12}$};
+
+    % Agrupamento: estados de extensao (q11, q12)
+    \node[draw, dashed, rounded corners, fit=(q11)(q12), inner sep=8pt,
+          label={[font=\footnotesize]above:letras ap\'os o ponto}] (ext) {};
 
     % Prefixo
     \path (q0) edge node {\texttt{h}} (q1)
@@ -50,23 +52,28 @@
           (q7) edge node[above] {\texttt{/}} (q8)
           (q8) edge node[above] {$A$} (q9);
 
-    % Dominio
+    % Rotulo em andamento (q9)
     \path (q0) edge node[below left, pos=0.45] {demais $A$} (q9);
-    \draw[->] (pref.south -| q1) -- node[right, pos=0.35] {demais $A$} (q9);
-    \path (q9) edge[loop left] node {$A$} (q9);
+    \draw[->] (pref.south -| q1) -- node[right, pos=0.35] {demais $W$} (q9);
+    \path (q9) edge[loop left] node {$W$} (q9);
 
-    % Ponto e extensao
-    \path (q9) edge node[left] {\texttt{.}} (q10);
+    % Ponto -> q10
+    \path (q9)  edge[bend left=22]  node[right] {\texttt{.}} (q10)
+          (q10) edge[bend left=22]  node[left]  {$D$} (q9);
     \draw[->] (pref.south west) to[out=-100, in=180, looseness=1.2]
           node[left, pos=0.5] {\texttt{.}} (q10.west);
-    \path (q10) edge node[above] {\texttt{c}} (q11)
-          (q11) edge node[above] {\texttt{o}} (q12)
-          (q12) edge node[above] {\texttt{m}} (q14)
-          (q10) edge node[below left]  {\texttt{b}} (q13)
-          (q13) edge node[below right] {\texttt{r}} (q14);
+
+    % Extensao
+    \path (q10) edge node[above] {$L$} (q11)
+          (q11) edge node[above] {$L$} (q12)
+          (q12) edge[loop right] node {$L$} (q12);
+    \draw[->] (ext.south) to[bend left=35] node[below] {\texttt{.}} (q10.south);
+    \draw[->] (ext.north west) -- node[right, pos=0.45] {$D$, \texttt{-}} (q9);
   \end{tikzpicture}}
-  \caption{AFD $M_{URL}$ do validador de URLs. $A = L \cup D$ (letras e d\'igitos);
-  ``demais $A$'' indica qualquer alfanum\'erico diferente do pr\'oximo s\'imbolo
-  esperado do prefixo. Transi\c{c}\~oes n\~ao desenhadas levam ao estado de erro $q_e$.}
+  \caption{AFD $M_{URL}$ do validador de URLs. $L$ = letras, $D$ = d\'igitos,
+  $A = L \cup D$ e $W = A \cup \{\texttt{-}\}$. ``Demais $A$'' e ``demais $W$''
+  indicam os s\'imbolos que n\~ao t\^em seta pr\'opria saindo daquele estado
+  (por exemplo, de $q_1$ n\~ao se repete o \texttt{t}). Transi\c{c}\~oes n\~ao
+  desenhadas levam ao estado de erro $q_e$.}
   \label{fig:afd-url}
 \end{figure}

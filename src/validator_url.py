@@ -1,19 +1,24 @@
 # Automato Finito Deterministico (AFD) para validacao sintatica de URLs.
 #
-# Linguagem reconhecida:   [http:// | https://]  dominio . (com | br)
-#   - dominio: uma ou mais letras (a-z, A-Z) ou digitos (0-9)
-#   - protocolo e extensao devem estar em letras minusculas
+# Linguagem reconhecida:
+#     [http:// | https://]  rotulo . rotulo . ... . extensao
+#   - rotulo:   comeca com letra ou digito; depois aceita letras, digitos e '-'
+#               (ex.: www, google, meu-site, ufal)
+#   - extensao: apenas letras, com pelo menos 2 (ex.: com, br, org, edu)
+#   - pelo menos um ponto; aceita subdominios (www.google.com) e extensoes
+#     de varios niveis (google.com.br)
+#   - protocolo em letras minusculas
 #
-# M = (Q, Sigma, delta, q0, F)   com   F = {q14}
+# M = (Q, Sigma, delta, q0, F)   com   F = {q12}
 # Estado de erro (armadilha): qe. Toda transicao nao listada leva a qe.
 
 LETRAS = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 DIGITOS = set("0123456789")
 ALFANUMERICOS = LETRAS | DIGITOS
-SIGMA = ALFANUMERICOS | {".", ":", "/"}
+SIGMA = ALFANUMERICOS | {".", ":", "/", "-"}
 
 ESTADO_INICIAL = "q0"
-ESTADOS_FINAIS = {"q14"}
+ESTADOS_FINAIS = {"q12"}
 ESTADO_ERRO = "qe"
 
 # Transicoes por simbolo especifico: (estado, simbolo) -> proximo estado
@@ -29,19 +34,20 @@ TRANSICOES = {
     ("q5", ":"): "q6",
     ("q6", "/"): "q7",
     ("q7", "/"): "q8",
-    # extensao ".com" ou ".br"
-    ("q10", "c"): "q11",
-    ("q11", "o"): "q12",
-    ("q12", "m"): "q14",
-    ("q10", "b"): "q13",
-    ("q13", "r"): "q14",
 }
 
-# Estados em que qualquer alfanumerico (nao tratado acima) leva ao dominio q9
-ESTADOS_DOMINIO = {"q0", "q1", "q2", "q3", "q4", "q5", "q8", "q9"}
+# Apos um ponto, a extensao precisa ter so letras (>= 2):
+# q10 (apos o ponto) --letra--> q11 (1 letra) --letra--> q12 (2+ letras)
+APOS_LETRA = {"q10": "q11", "q11": "q12", "q12": "q12"}
 
-# Estados em que o '.' (apos >= 1 caractere de dominio) leva a q10
-ESTADOS_PONTO = {"q1", "q2", "q3", "q4", "q5", "q9"}
+# Estados em que letra/digito (nao tratado acima) leva a q9 (rotulo em andamento)
+ESTADOS_ROTULO = {"q0", "q1", "q2", "q3", "q4", "q5", "q8", "q9"}
+
+# Estados em que o '-' leva a q9 (hifen so dentro do rotulo, nunca no inicio)
+ESTADOS_HIFEN = {"q1", "q2", "q3", "q4", "q5", "q9", "q11", "q12"}
+
+# Estados em que o '.' leva a q10 (inicio de um novo rotulo)
+ESTADOS_PONTO = {"q1", "q2", "q3", "q4", "q5", "q9", "q11", "q12"}
 
 
 def delta(estado: str, simbolo: str) -> str:
@@ -50,7 +56,14 @@ def delta(estado: str, simbolo: str) -> str:
         return ESTADO_ERRO
     if (estado, simbolo) in TRANSICOES:
         return TRANSICOES[(estado, simbolo)]
-    if simbolo in ALFANUMERICOS and estado in ESTADOS_DOMINIO:
+    if estado in APOS_LETRA:                       # q10, q11, q12
+        if simbolo in LETRAS:
+            return APOS_LETRA[estado]
+        if simbolo in DIGITOS:
+            return "q9"
+    if simbolo in ALFANUMERICOS and estado in ESTADOS_ROTULO:
+        return "q9"
+    if simbolo == "-" and estado in ESTADOS_HIFEN:
         return "q9"
     if simbolo == "." and estado in ESTADOS_PONTO:
         return "q10"
@@ -76,10 +89,11 @@ def validar_url(cadeia: str, verbose: bool = False) -> bool:
 if __name__ == "__main__":
     exemplos = [
         "google.com",
-        "http://google.com",
-        "https://ufal.br",
+        "www.google.com",
+        "https://www.ufal.edu.br",
+        "http://meu-site.com.br",
+        "google",
         "http://.com",
-        "google.org",
     ]
     for url in exemplos:
         resultado = "VALIDA" if validar_url(url, verbose=True) else "INVALIDA"
