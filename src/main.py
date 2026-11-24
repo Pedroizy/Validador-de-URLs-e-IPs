@@ -1,4 +1,5 @@
 
+from input_handler import limpar_entrada
 from validator_ip import processar_ip
 from validator_url import validar_url
 
@@ -14,6 +15,7 @@ def main():
 
         if opcao == "1":
             entrada = input("Digite o endereço IP: ")
+            entrada = limpar_entrada(entrada)
 
             if processar_ip(entrada):
                 print("ACEITA")
@@ -22,6 +24,7 @@ def main():
 
         elif opcao == "2":
             entrada = input("Digite a URL: ")
+            entrada = limpar_entrada(entrada)
 
             if validar_url(entrada):
                 print("ACEITA")
