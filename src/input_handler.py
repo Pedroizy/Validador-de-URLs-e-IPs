@@ -31,14 +31,3 @@ def validar_alfabeto_inicial(texto, tipo):
             return False
     
     return True    
-
-if __name__ == "__main__":
-    entrada = input("digite um IP ou URL:")
-    resultado = limpar_entrada (entrada)
-   
-    print(resultado)
-
-
-    print(validar_alfabeto_inicial("192.168.0.a", "ip"))
-    print(validar_alfabeto_inicial("https://exemplo.com", "url"))
-    print(validar_alfabeto_inicial("192.168.0.1", "tipo_invalido"))
