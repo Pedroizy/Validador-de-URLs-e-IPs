@@ -1,8 +1,8 @@
 
-from input_handler import # a definir #
-from validator_ip import validar_alfabeto_inicial
+from input_handler import limpar_entrada
+from validator_ip import processar_ip
 from validator_url import validar_url
-
+from input_handler import limpar_entrada, validar_alfabeto_inicial 
 
 def main():
     while True:
@@ -14,27 +14,26 @@ def main():
         opcao = input("\nEscolha uma opção: ")
 
         if opcao == "1":
-            entrada = input("Digite o endereço IP: ")
-
-            # Primeiro verifica os caracteres permitidos
-            if Teste1(entrada):
-
-                # Se estiver tudo correto, envia para o autômato
-                if validar_alfabeto_inicial(entrada):
+            entrada = limpar_entrada(input("Digite o endereço IP: "))
+            if  validar_alfabeto_inicial(entrada, "ip"):
+                
+                if processar_ip(entrada):
                     print("ACEITA")
                 else:
                     print("REJEITA")
-
             else:
-                print("ERRO: Foram inseridos caracteres não permitidos em um endereço IP.")
+                print("ERRO: Foram inseridos caracteres não permitidos em um IP.")
 
         elif opcao == "2":
-            entrada = input("Digite a URL: ")
+            entrada = limpar_entrada(input("Digite a URL: "))
+            if validar_alfabeto_inicial(entrada, "url"):
 
-            if validar_url(entrada):
-                print("ACEITA")
+                if validar_url(entrada):
+                    print("ACEITA")
+                else:
+                    print("REJEITA")
             else:
-                print("REJEITA")
+                print("ERRO: Foram inseridos caracteres não permitidos em uma URL.")        
 
         elif opcao == "0":
             print("Encerrando o programa...")
